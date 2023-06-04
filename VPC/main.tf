@@ -98,15 +98,22 @@ resource "aws_route_table_association" "MyLab_asscoiation" {
 }
 
 # Create a AWS EC2 instance
-resource "aws_instance" "demo" {
+resource "aws_instance" "Jenkins" {
   ami                         = var.ami
   instance_type               = var.instance_type
   key_name                    = var.instance_key_name
   vpc_security_group_ids      = [aws_security_group.MyLab_sec_group.id]
   subnet_id                   = aws_subnet.MyLab-Subnet1.id
   associate_public_ip_address = true
+  user_data                   = file("InstallJenkins.sh")
 
   tags = {
-    Name = "HelloWorld"
+    Name = "Jenkins-Server"
   }
+}
+
+# Output the pulic IP address of the EC2 instance
+output "instance_public_ip" {
+  value       = aws_instance.Jenkins.public_ip
+  description = "The public IP address of the EC2 instance"
 }
