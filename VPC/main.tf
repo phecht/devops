@@ -112,8 +112,28 @@ resource "aws_instance" "Jenkins" {
   }
 }
 
-# Output the pulic IP address of the EC2 instance
-output "instance_public_ip" {
+resource "aws_instance" "AnsibleController" {
+  ami                         = var.ami
+  instance_type               = var.instance_type
+  key_name                    = var.instance_key_name
+  vpc_security_group_ids      = [aws_security_group.MyLab_sec_group.id]
+  subnet_id                   = aws_subnet.MyLab-Subnet1.id
+  associate_public_ip_address = true
+  // user_data                   = file("InstallAnsibleCN.sh") // InstallAnsibleCN
+
+  tags = {
+    Name = "Ansible-ControlNode"
+  }
+}
+
+# Output the pulic IP address of the EC2 Jenkins instance
+output "instance_public_jenkins_ip" {
   value       = aws_instance.Jenkins.public_ip
-  description = "The public IP address of the EC2 instance"
+  description = "The public IP address of the EC2 Jenkins instance"
+}
+
+# Output the pulic IP address of the EC2 AnsibleController instance
+output "instance_public_AnsibleController_ip" {
+  value       = aws_instance.AnsibleController.public_ip
+  description = "The public IP address of the EC2 AnsibleController instance"
 }
