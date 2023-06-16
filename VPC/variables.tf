@@ -22,11 +22,13 @@ variable "instance_type" {
   default = "t2.micro"
 }
 
-variable "instance_key_name" {
-  type    = string
-  default = "udemy_ec2"
-}
 variable "instance_type_for_nexus" {
   type    = string
   default = "t2.medium"
 }
+
+variable "instance_key_name" {
+  type    = string
+  default = "udemy_ec2"
+}
+

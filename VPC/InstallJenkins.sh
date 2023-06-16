@@ -10,7 +10,7 @@
 
 # Install Java
 echo Starting install of java
-yum install java-11-amazon-corretto-devel.x86_64 -y
+dnf install java-11-amazon-corretto-devel.x86_64 -y
 echo Ending install of java
 # yum install java-1.8.0-openjdk.x86_64 -y
 

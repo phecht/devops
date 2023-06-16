@@ -4,7 +4,12 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 4.16"
     }
+    ansible = {
+      version = "1.1.0"
+      source  = "ansible/ansible"
+    }
   }
+
   required_version = ">= 1.2.0"
 }
 
@@ -119,12 +124,75 @@ resource "aws_instance" "AnsibleController" {
   vpc_security_group_ids      = [aws_security_group.MyLab_sec_group.id]
   subnet_id                   = aws_subnet.MyLab-Subnet1.id
   associate_public_ip_address = true
-  // user_data                   = file("InstallAnsibleCN.sh") // InstallAnsibleCN
+  user_data                   = file("InstallAnsibleCN.sh") 
 
   tags = {
     Name = "Ansible-ControlNode"
   }
 }
+
+resource "aws_instance" "AnsibleManagedNode1" {
+  ami                         = var.ami
+  instance_type               = var.instance_type
+  key_name                    = var.instance_key_name
+  vpc_security_group_ids      = [aws_security_group.MyLab_sec_group.id]
+  subnet_id                   = aws_subnet.MyLab-Subnet1.id
+  associate_public_ip_address = true
+  user_data                   = file("AnsibleManagedNode.sh") 
+
+  tags = {
+    Name = "AnsibleMN-ApacheTomcat"
+  }
+}
+
+resource "aws_instance" "DockerHost" {
+  ami                         = var.ami
+  instance_type               = var.instance_type
+  key_name                    = var.instance_key_name
+  vpc_security_group_ids      = [aws_security_group.MyLab_sec_group.id]
+  subnet_id                   = aws_subnet.MyLab-Subnet1.id
+  associate_public_ip_address = true
+  user_data                   = file("dockersetup.sh") 
+
+  tags = {
+    Name = "DockerHost"
+  }
+}
+
+resource "aws_instance" "Nexus" {
+  ami                         = var.ami
+  instance_type               = var.instance_type_for_nexus
+  key_name                    = var.instance_key_name
+  vpc_security_group_ids      = [aws_security_group.MyLab_sec_group.id]
+  subnet_id                   = aws_subnet.MyLab-Subnet1.id
+  associate_public_ip_address = true
+  user_data                   = file("InstallNexus.sh") 
+
+  tags = {
+    Name = "Nexus-server"
+  }
+}
+
+// On controlnode ssh-keygen
+// ssh-copy-id to ManagedNode.
+// 
+/* 
+resource "ansible_host" "my_ec2" {          #### ansible host details
+  name   = "auto1Ansible"
+  groups = ["nginx"]
+  variables = {
+    ansible_user                 = "ansible",
+    ansible_ssh_private_key_file = "~/.ssh/id_rsa",
+    ansible_python_interpreter   = "/usr/bin/python3"
+  }
+}
+
+# Output the pulic IP address of the EC2 Jenkins instance
+output "instance_anisble_host" {
+  value       = ansible_host.my_ec2.name
+  description = "The name of ansible instance"
+}
+ */
 
 # Output the pulic IP address of the EC2 Jenkins instance
 output "instance_public_jenkins_ip" {
@@ -136,4 +204,21 @@ output "instance_public_jenkins_ip" {
 output "instance_public_AnsibleController_ip" {
   value       = aws_instance.AnsibleController.public_ip
   description = "The public IP address of the EC2 AnsibleController instance"
+}
+# Output the pulic IP address of the EC2 AnsibleCMangedNode instance
+output "instance_public_AnsibleManagedNode1_ip" {
+  value       = aws_instance.AnsibleManagedNode1.public_ip
+  description = "The public IP address of the EC2 AnsibleMN1"
+}
+
+# Output the pulic IP address of the EC2 DockerHost instance
+output "instance_public_docker_ip" {
+  value       = aws_instance.DockerHost.public_ip
+  description = "The public IP address of the EC2 DockerHost"
+}
+
+# Output the pulic IP address of the EC2 Nexus instance
+output "instance_public_nexus_ip" {
+  value       = aws_instance.Nexus.public_ip
+  description = "The public IP address of the EC2 Nexus"
 }
